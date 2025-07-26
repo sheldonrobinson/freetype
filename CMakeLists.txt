@@ -219,6 +219,8 @@ cmake_dependent_option(FT_REQUIRE_BROTLI
 
 option(FT_ENABLE_ERROR_STRINGS
   "Enable support for meaningful error descriptions." OFF)
+  
+option(FT_INSTALL "Install applications and library" OFF)
 
 # Disallow in-source builds
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
@@ -560,19 +562,21 @@ endif ()
 include(GNUInstallDirs)
 
 if (NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
-  install(
-    # Note the trailing slash in the argument to `DIRECTORY'!
-    DIRECTORY ${PROJECT_SOURCE_DIR}/include/
-      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/freetype2
-      COMPONENT headers
-      PATTERN "internal" EXCLUDE
-      PATTERN "ftconfig.h" EXCLUDE
-      PATTERN "ftoption.h" EXCLUDE)
-  install(
-    FILES ${PROJECT_BINARY_DIR}/include/freetype/config/ftconfig.h
-          ${PROJECT_BINARY_DIR}/include/freetype/config/ftoption.h
-      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/freetype2/freetype/config
-      COMPONENT headers)
+	if(FT_INSTALL)
+	  install(
+		# Note the trailing slash in the argument to `DIRECTORY'!
+		DIRECTORY ${PROJECT_SOURCE_DIR}/include/
+		  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/freetype2
+		  COMPONENT headers
+		  PATTERN "internal" EXCLUDE
+		  PATTERN "ftconfig.h" EXCLUDE
+		  PATTERN "ftoption.h" EXCLUDE)
+	  install(
+		FILES ${PROJECT_BINARY_DIR}/include/freetype/config/ftconfig.h
+			  ${PROJECT_BINARY_DIR}/include/freetype/config/ftoption.h
+		  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/freetype2/freetype/config
+		  COMPONENT headers)
+	endif()
 endif ()
 
 if (NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
@@ -621,35 +625,36 @@ if (NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
   if (NOT (ORIGINAL_FREETYPE2_PC_IN STREQUAL FREETYPE2_PC_IN))
     file(WRITE "${FREETYPE2_PC_IN_NAME}" ${FREETYPE2_PC_IN})
   endif ()
+	if(FT_INSTALL)
+	  install(
+		FILES ${PROJECT_BINARY_DIR}/freetype2.pc
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+		COMPONENT pkgconfig)
 
-  install(
-    FILES ${PROJECT_BINARY_DIR}/freetype2.pc
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
-    COMPONENT pkgconfig)
+	  include(CMakePackageConfigHelpers)
+	  write_basic_package_version_file(
+		${PROJECT_BINARY_DIR}/freetype-config-version.cmake
+		VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
+		COMPATIBILITY SameMajorVersion)
 
-  include(CMakePackageConfigHelpers)
-  write_basic_package_version_file(
-    ${PROJECT_BINARY_DIR}/freetype-config-version.cmake
-    VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
-    COMPATIBILITY SameMajorVersion)
-
-  install(
-    TARGETS freetype freetype-interface
-      EXPORT freetype-targets
-      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-      FRAMEWORK DESTINATION Library/Frameworks
-      COMPONENT libraries)
-  install(
-    EXPORT freetype-targets
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/freetype
-      FILE freetype-config.cmake
-      COMPONENT headers)
-  install(
-    FILES ${PROJECT_BINARY_DIR}/freetype-config-version.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/freetype
-    COMPONENT headers)
+	  install(
+		TARGETS freetype freetype-interface
+		  EXPORT freetype-targets
+		  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+		  FRAMEWORK DESTINATION Library/Frameworks
+		  COMPONENT libraries)
+	  install(
+		EXPORT freetype-targets
+		  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/freetype
+		  FILE freetype-config.cmake
+		  COMPONENT headers)
+	  install(
+		FILES ${PROJECT_BINARY_DIR}/freetype-config-version.cmake
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/freetype
+		COMPONENT headers)
+	endif()
 endif ()
 
 
